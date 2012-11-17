@@ -82,6 +82,40 @@ $send_every_email = str_replace(";", "", $send_every_email);
 if ( isset($_GET['dm']) ) {
 	$debug_mode = $_GET['dm'];
 }
+
+// Check if variables contains any data
+if ( $debug_mode == "1" ) {
+	echo "<h2>Checking variables</h2>\n";
+}
+if ( $geocaching_url == "" ) {
+	exit("<p>geocaching_url contains no valid data!</p>\n";
+}
+else if ( $users == "" ) {
+	exit("<p>users contains no valid data!</p>\n";
+}
+else if ( $from_email == "" ) {
+	exit("<p>from_email contains no valid data!</p>\n";
+}
+else if ( $reply_email == "" ) {
+	exit("<p>reply_email contains no valid data!</p>\n";
+}
+else if ( $backups == "" ) {
+	exit("<p>backups contains no valid data!</p>\n";
+}
+else if ( $debug_mode == "" ) {
+	exit("<p>debug_mode contains no valid data!</p>\n";
+}
+else if ( $email_mode == "" ) {
+	exit("<p>email_mode contains no valid data!</p>\n";
+}
+else if ( $send_every_email == "" ) {
+	exit("<p>send_every_email contains no valid data!</p>\n";
+}
+else {
+	if ( $debug_mode == "1" ) {
+		echo "<p>Everything is set as it should be.</p>\n";
+	}
+}
 ?>
 
 <?php if ( $debug_mode == "1" ) : ?>
