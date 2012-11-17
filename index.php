@@ -82,34 +82,36 @@ $send_every_email = str_replace(";", "", $send_every_email);
 if ( isset($_GET['dm']) ) {
 	$debug_mode = $_GET['dm'];
 }
-
+if ( isset($_GET['email']) ) {
+	$email_mode = $_GET['email'];
+}
 // Check if variables contains any data
 if ( $debug_mode == "1" ) {
 	echo "<h2>Checking variables</h2>\n";
 }
 if ( $geocaching_url == "" ) {
-	exit("<p>geocaching_url contains no valid data!</p>\n";
+	exit("<p>geocaching_url contains no valid data!</p>\n");
 }
 else if ( $users == "" ) {
-	exit("<p>users contains no valid data!</p>\n";
+	exit("<p>users contains no valid data!</p>\n");
 }
 else if ( $from_email == "" ) {
-	exit("<p>from_email contains no valid data!</p>\n";
+	exit("<p>from_email contains no valid data!</p>\n");
 }
 else if ( $reply_email == "" ) {
-	exit("<p>reply_email contains no valid data!</p>\n";
+	exit("<p>reply_email contains no valid data!</p>\n");
 }
 else if ( $backups == "" ) {
-	exit("<p>backups contains no valid data!</p>\n";
+	exit("<p>backups contains no valid data!</p>\n");
 }
 else if ( $debug_mode == "" ) {
-	exit("<p>debug_mode contains no valid data!</p>\n";
+	exit("<p>debug_mode contains no valid data!</p>\n");
 }
 else if ( $email_mode == "" ) {
-	exit("<p>email_mode contains no valid data!</p>\n";
+	exit("<p>email_mode contains no valid data!</p>\n");
 }
 else if ( $send_every_email == "" ) {
-	exit("<p>send_every_email contains no valid data!</p>\n";
+	exit("<p>send_every_email contains no valid data!</p>\n");
 }
 else {
 	if ( $debug_mode == "1" ) {
@@ -165,13 +167,18 @@ if ( $debug_mode == "1" ) {
 $html = file_get_html($geocaching_url);
 
 // We look for titles on the web page
-foreach($html->find('td.Merge') as $article) {
-	if ( $article->find('span', 0)->plaintext != "" ) {
-    $naslovi[] = trim($article->find('span', 0)->plaintext); // we search for cache's data
+$i = 0;
+foreach($html->find('tr.Data') as $article) {
+	if ( $article->find('span.small', 0)->plaintext != "" ) {
+    $naslovi[] = trim($article->find('td.Merge span', 0)->plaintext); // we search for cache's data
+    $url[] = "http://www.geocaching.com" . trim($article->find('a.lnk', 0)->href);
+    list($owner[], $cache_id[], $country[]) = split(' \| ', preg_replace('/(?:\s\s+|\n|\t)/', ' ', trim($article->find('span.small', 0)->plaintext)));
+    $date[] = trim($article->find('span.small', 1)->plaintext);
     // if the cache does not exist in the database, we add it to the list of new caches
-    if ( !in_array(trim($article->find('span', 0)->plaintext), $vrstice) ) {
-			$novosti[] = trim($article->find('span', 0)->plaintext);
+    if ( !in_array($cache_id[$i], $vrstice) ) {
+			$novosti[] = $i;
 		}
+		$i++;
 	}
 }
 
@@ -194,7 +201,9 @@ if ( $i_max >> 0 ) {
 		echo "<h2>New caches</h2>\n";
 		echo "<ul>\n";
 		for ( $i; $i <= $i_max - 1; $i++ ) {
-			echo "<li>$i: $novosti[$i]</li>\n"; 
+			$zaporedna = $novosti[$i];
+			$this_owner = substr($owner[$zaporedna], -strlen($owner[$zaporedna]) + 3);
+			echo "<li>$i:$zaporedna:$cache_id[$zaporedna]: <a href=\"$url[$zaporedna]\">$naslovi[$zaporedna]</a>: $this_owner: $date[$zaporedna]</li>\n"; 
 		}
 		echo "</ul>\n";
 	}
@@ -223,10 +232,10 @@ if ( $i_max >> 0 ) {
 		echo "<p>Database was deleted!</p>\n";
 	}
 	
-	// We create fresh dataabse3
+	// We create fresh database3
 	$nova_baza = fopen("base", 'w') or die("<p>Can not create new database</p>\n");
 	for ( $i = 0; $i <= $stran_st_zapisov; $i++ ) {
-		fwrite($nova_baza, $naslovi[$i]."\n");
+		fwrite($nova_baza, $cache_id[$i]."\n");
 	}
 	fclose($nova_baza);
 	if ( $debug_mode == "1" ) {
@@ -241,10 +250,14 @@ if ( $i_max >> 0 ) {
 		$headers .= "From: " . $from_email . "\r\n";
 		$headers .= "Reply-To: " . $reply_email . "\r\n";
 		$message = "Nova posodobitev statusa se je zgodila. Naslovi so:<br />\r\n";
+		$message .= "<ul>\r\n";
+		
 		for ( $i = 0; $i <= $i_max - 1; $i++ ) {
-			$message .=  "$i: $novosti[$i]<br />\r\n"; 
+			$zaporedna = $novosti[$i];
+			$this_owner = substr($owner[$zaporedna], -strlen($owner[$zaporedna]) + 3);
+			$message .= "<li>$i:$zaporedna:$cache_id[$zaporedna]: <a href=\"$url[$zaporedna]\">$naslovi[$zaporedna]</a>: $this_owner: $date[$zaporedna]</li>\n"; 
 		}
-		$message .= "Uspešen lov.<br />\r\n";
+		$message .= "</ul>\r\nUspešen lov.<br />\r\n";
 		$subject = "Na GC strani so objavljeni novi zakladi!";
 		mail($user, $subject, $message, $headers);
 		if ( $debug_mode == "1" ) {
