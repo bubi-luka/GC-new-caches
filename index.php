@@ -77,6 +77,11 @@ $backups = str_replace(";", "", $backups);
 $debug_mode = str_replace(";", "", $debug_mode);
 $email_mode = str_replace(";", "", $email_mode);
 $send_every_email = str_replace(";", "", $send_every_email);
+
+// When method GET is used it overrides manual settings
+if ( isset($_GET['dm']) ) {
+	$debug_mode = $_GET['dm'];
+}
 ?>
 
 <?php if ( $debug_mode == "1" ) : ?>
