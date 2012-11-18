@@ -269,6 +269,9 @@ if ( $i_max >> 0 ) {
 			$message .= "</tr>\r\n";
 		}
 		$message .= "</table>\r\nUspešen lov.<br />\r\n";
+		$message .= "<p><small>Če imate kakšne predloge ali pa težave pri uporabi programa, ";
+		$message .= "mi to prosim sporočite kar prek <a href=\"https://github.com/bubi-luka/GC-new-caches/issues/new\">";
+		$message .= "GitHub spletne strani</a> (morda se boste morali brezplačno prijaviti). Hvala!</small></p>\r\n";
 		$subject = "Na GC strani so objavljeni novi zakladi!";
 		mail($user, $subject, $message, $headers);
 		if ( $debug_mode == "1" ) {
