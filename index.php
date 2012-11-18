@@ -199,13 +199,19 @@ if ( $i_max >> 0 ) {
 	// We start the loop that will write all new caches to the web page.
 	if ( $debug_mode == "1" ) {
 		echo "<h2>New caches</h2>\n";
-		echo "<ul>\n";
+		echo "<table>\n";
 		for ( $i; $i <= $i_max - 1; $i++ ) {
 			$zaporedna = $novosti[$i];
 			$this_owner = substr($owner[$zaporedna], -strlen($owner[$zaporedna]) + 3);
-			echo "<li>$i:$zaporedna:$cache_id[$zaporedna]: <a href=\"$url[$zaporedna]\">$naslovi[$zaporedna]</a>: $this_owner: $date[$zaporedna]</li>\n"; 
+			echo "<tr>\n";
+			echo "<td>" . ($i + 1) . "</td>\n";
+			echo "<td>" . "<a href=\"$url[$zaporedna]\">$cache_id[$zaporedna]</a>" . "</td>\n";
+			echo "<td>" . "<a href=\"$url[$zaporedna]\">$naslovi[$zaporedna]</a>" . "</td>\n";
+			echo "<td>" . $this_owner . "</td>\n";
+			echo "<td>" . $date[$zaporedna] . "</td>\n";
+			echo "</tr>\n";
 		}
-		echo "</ul>\n";
+		echo "</table>\n";
 	}
 
 	// We create database backup
@@ -250,14 +256,19 @@ if ( $i_max >> 0 ) {
 		$headers .= "From: " . $from_email . "\r\n";
 		$headers .= "Reply-To: " . $reply_email . "\r\n";
 		$message = "Nova posodobitev statusa se je zgodila. Naslovi so:<br />\r\n";
-		$message .= "<ul>\r\n";
-		
+		$message .= "<table>\r\n";
 		for ( $i = 0; $i <= $i_max - 1; $i++ ) {
 			$zaporedna = $novosti[$i];
 			$this_owner = substr($owner[$zaporedna], -strlen($owner[$zaporedna]) + 3);
-			$message .= "<li>$i:$zaporedna:$cache_id[$zaporedna]: <a href=\"$url[$zaporedna]\">$naslovi[$zaporedna]</a>: $this_owner: $date[$zaporedna]</li>\n"; 
+			$message .= "<tr>\r\n";
+			$message .= "<td>" . ($i + 1) . "</td>\r\n";
+			$message .= "<td>" . "<a href=\"$url[$zaporedna]\">$cache_id[$zaporedna]</a>" . "</td>\r\n";
+			$message .= "<td>" . "<a href=\"$url[$zaporedna]\">$naslovi[$zaporedna]</a>" . "</td>\r\n";
+			$message .= "<td>" . $this_owner . "</td>\r\n";
+			$message .= "<td>" . $date[$zaporedna] . "</td>\r\n";
+			$message .= "</tr>\r\n";
 		}
-		$message .= "</ul>\r\nUspešen lov.<br />\r\n";
+		$message .= "</table>\r\nUspešen lov.<br />\r\n";
 		$subject = "Na GC strani so objavljeni novi zakladi!";
 		mail($user, $subject, $message, $headers);
 		if ( $debug_mode == "1" ) {
