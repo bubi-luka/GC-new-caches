@@ -296,7 +296,7 @@ else {
 	$script_status = "1";
 	
 	// We send notices for no new caches to the users on the list
-	if ( $send_every_email == "1" ) {
+	if ( $send_every_email == "0" ) {
 		$user = $users;
 		$headers  = "MIME-Version: 1.0\r\n";
 		$headers .= "Content-type: text/html; charset=UTF-8\r\n";
