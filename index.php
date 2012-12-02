@@ -11,6 +11,7 @@ $geocaching_url = "";
 $users = "";
 $from_email = "";
 $reply_email = "";
+$admin_email = "";
 $backups = "";
 $debug_mode = "";
 $email_mode = "";
@@ -67,9 +68,14 @@ else {
 				$send_every_email = str_replace("send-every-email: ", "", $line);
 			}
 		}
-		if ( strstr($line, "log_every_run: ") ) {
+		if ( strstr($line, "log-every-run: ") ) {
 			if ( !strstr($line, "#") ) {
-				$log_every_run = str_replace("log_every_run: ", "", $line);
+				$log_every_run = str_replace("log-every-run: ", "", $line);
+			}
+		}
+		if ( strstr($line, "admin-email: ") ) {
+			if ( !strstr($line, "#") ) {
+				$admin_email = str_replace("admin-email: ", "", $line);
 			}
 		}
 	}
@@ -85,6 +91,7 @@ $debug_mode = str_replace(";", "", $debug_mode);
 $email_mode = str_replace(";", "", $email_mode);
 $send_every_email = str_replace(";", "", $send_every_email);
 $log_every_run = str_replace(";", "", $log_every_run);
+$admin_email = str_replace(";", "", $admin_email);
 
 // When method GET is used it overrides manual settings
 if ( isset($_GET['dm']) ) {
@@ -93,6 +100,18 @@ if ( isset($_GET['dm']) ) {
 if ( isset($_GET['email']) ) {
 	$email_mode = $_GET['email'];
 }
+?>
+
+<?php if ( $debug_mode == "1" ) : ?>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>Preverjanje</title>
+	</head>
+<body>
+<?php endif; ?>
+
+<?php
 // Check if variables contains any data
 if ( $debug_mode == "1" ) {
 	echo "<h2>Checking variables</h2>\n";
@@ -121,21 +140,18 @@ else if ( $email_mode == "" ) {
 else if ( $send_every_email == "" ) {
 	exit("<p>send_every_email contains no valid data!</p>\n");
 }
+else if ( $log_every_run == "" ) {
+	exit("<p>log_every_run contains no valid data!</p>\n");
+}
+else if ( $admin_email == "" ) {
+	exit("<p>admin_email contains no valid data!</p>\n");
+}
 else {
 	if ( $debug_mode == "1" ) {
 		echo "<p>Everything is set as it should be.</p>\n";
 	}
 }
 ?>
-
-<?php if ( $debug_mode == "1" ) : ?>
-<html>
-	<head>
-		<meta charset="utf-8" />
-		<title>Preverjanje</title>
-	</head>
-<body>
-<?php endif; ?>
 
 <?php
 if ( $debug_mode == "1" ) {
@@ -151,7 +167,37 @@ if ( $debug_mode == "1" ) {
 	echo "<li>email_mode: " . $email_mode . "</li>\n";
 	echo "<li>send_every_email: " . $send_every_email . "</li>\n";
 	echo "<li>log_every_run: " . $log_every_run . "</li>\n";
+	echo "<li>admin-email: " . $admin_email . "</li>\n";
 	echo "</ul>";
+}
+?>
+
+<?php
+// If log for this day is not found, we send the last log to the administrator
+$today = getdate();
+if ( !file_exists($today['year'] . "-" . $today['mon'] . "-" . $today['mday'] . ".log") ) {
+	$yesterday = date("Y-n-j", time() - (60*60*24) ) . ".log";
+	if ( $debug_mode == "1" ) {
+		echo "<h2>Sending yesterday's log file to the administrator</h2>";
+	}
+	$user = $admin_email;
+	$headers  = "MIME-Version: 1.0\r\n";
+	$headers .= "Content-type: text/html; charset=UTF-8\r\n";
+	$headers .= "From: " . $from_email . "\r\n";
+	$headers .= "Reply-To: " . $reply_email . "\r\n";
+	$message = "Prilagam včerajšnjo log datoteko:<br />\r\n";
+	$message .= "<ol>\r\n";
+	$yesterday_log = fopen($yesterday, "r") or exit ("<p>The yesterday's log can not be opened!</p>\n");
+	while ( !feof($yesterday_log) ) {
+		$message .= "<li>" . fgets($yesterday_log) . "</li>\r\n"; // each line contains one cache
+	}
+	fclose($yesterday_log);
+	$message .= "</ol>\r\n";
+	$subject = "GC Script: Log from yesterday!";
+	mail($user, $subject, $message, $headers);
+	if ( $debug_mode == "1" ) {
+		echo "The log was send!<p>\n";
+	}
 }
 ?>
 
@@ -231,7 +277,6 @@ if ( $i_max >> 0 ) {
 		echo "<h2>Creating new database</h2>\n";
 		echo "<p>Since the database is outdated, we will create fresh one.</p>\n";
 	}
-	$today = getdate();
 	$ime_kopije = "base-".$today['year']."-".$today['mon']."-".$today['mday']."-".$today['hours']."-".$today['minutes']."-".$today['seconds'].".bck";
 	if ( $backups == "1" ) {
 		$varnostna_kopija = fopen($ime_kopije, 'w') or die("<p>Can not create backup copy of a database!</p>\n");
@@ -292,11 +337,11 @@ if ( $i_max >> 0 ) {
 	}
 }
 else {
-	// We set the script status to 1 => no new caches were found
-	$script_status = "1";
+	// We set the script status to 0 => no new caches were found
+	$script_status = "0";
 	
 	// We send notices for no new caches to the users on the list
-	if ( $send_every_email == "0" ) {
+	if ( $send_every_email == "1" ) {
 		$user = $users;
 		$headers  = "MIME-Version: 1.0\r\n";
 		$headers .= "Content-type: text/html; charset=UTF-8\r\n";
@@ -314,7 +359,6 @@ else {
 // we log current date and time with the resulting status of the script into log file
 if ( $log_every_run == "1" ) {
 
-	$today = getdate();
 	$ime_loga = $today['year'] . "-" . $today['mon'] . "-" . $today['mday'] . ".log";
 	
 	$logiranje = fopen($ime_loga, 'a') or die("<p>Can not create log file!</p>\n");

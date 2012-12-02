@@ -23,9 +23,14 @@
 from-email: ;
 
 /*******************************************************************************
-* Set reply to email address.                                                      *
+* Set reply to email address.                                                  *
 *******************************************************************************/
 reply-email: ;
+
+/*******************************************************************************
+* Set email of the administrator of the script.                                *
+*******************************************************************************/
+admin-email: ;
 
 /*******************************************************************************
 * Would you like the script to create backup copies of the database? Mark "1"  *
@@ -58,6 +63,7 @@ email-mode: 1;
 * the mail is send only when a cache is discovered.                            *
 *******************************************************************************/
 send-any-email: 1;
+
 /*******************************************************************************
 * This variable sets the script to log every script run into log file with 		 *
 * run date and time and run status (found new caches, did not find new caches. *
@@ -65,5 +71,5 @@ send-any-email: 1;
 * every script run is set. Useful when not sure if the cron is working as 		 *
 * expected.																																		 *
 *******************************************************************************/
-log_every_run: 1;
+log-every-run: 1;
 
