@@ -58,4 +58,12 @@ email-mode: 1;
 * the mail is send only when a cache is discovered.                            *
 *******************************************************************************/
 send-any-email: 1;
+/*******************************************************************************
+* This variable sets the script to log every script run into log file with 		 *
+* run date and time and run status (found new caches, did not find new caches. *
+* If the parameter is set as 0 no log record will be made. If it is set to 1,	 *
+* every script run is set. Useful when not sure if the cron is working as 		 *
+* expected.																																		 *
+*******************************************************************************/
+log_every_run: 1;
 

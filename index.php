@@ -15,6 +15,8 @@ $backups = "";
 $debug_mode = "";
 $email_mode = "";
 $send_every_email = "";
+$log_every_run = "";
+$script_status = "";
 
 // Look for config.php file, send error if there is none.
 if ( !file_exists("config.php") ) {
@@ -65,6 +67,11 @@ else {
 				$send_every_email = str_replace("send-every-email: ", "", $line);
 			}
 		}
+		if ( strstr($line, "log_every_run: ") ) {
+			if ( !strstr($line, "#") ) {
+				$log_every_run = str_replace("log_every_run: ", "", $line);
+			}
+		}
 	}
 }
 
@@ -77,6 +84,7 @@ $backups = str_replace(";", "", $backups);
 $debug_mode = str_replace(";", "", $debug_mode);
 $email_mode = str_replace(";", "", $email_mode);
 $send_every_email = str_replace(";", "", $send_every_email);
+$log_every_run = str_replace(";", "", $log_every_run);
 
 // When method GET is used it overrides manual settings
 if ( isset($_GET['dm']) ) {
@@ -142,6 +150,7 @@ if ( $debug_mode == "1" ) {
 	echo "<li>debug_mode: " . $debug_mode . "</li>\n";
 	echo "<li>email_mode: " . $email_mode . "</li>\n";
 	echo "<li>send_every_email: " . $send_every_email . "</li>\n";
+	echo "<li>log_every_run: " . $log_every_run . "</li>\n";
 	echo "</ul>";
 }
 ?>
@@ -196,6 +205,9 @@ $i_max = count($novosti);
 
 // In case of new caches we create database backup and write new data in the database
 if ( $i_max >> 0 ) {
+	// We set the script status to 1 => new caches were found
+	$script_status = "1";
+	
 	// We start the loop that will write all new caches to the web page.
 	if ( $debug_mode == "1" ) {
 		echo "<h2>New caches</h2>\n";
@@ -238,7 +250,7 @@ if ( $i_max >> 0 ) {
 		echo "<p>Database was deleted!</p>\n";
 	}
 	
-	// We create fresh database3
+	// We create fresh database
 	$nova_baza = fopen("base", 'w') or die("<p>Can not create new database</p>\n");
 	for ( $i = 0; $i <= $stran_st_zapisov; $i++ ) {
 		fwrite($nova_baza, $cache_id[$i]."\n");
@@ -280,6 +292,9 @@ if ( $i_max >> 0 ) {
 	}
 }
 else {
+	// We set the script status to 1 => no new caches were found
+	$script_status = "1";
+	
 	// We send notices for no new caches to the users on the list
 	if ( $send_every_email == "1" ) {
 		$user = $users;
@@ -293,6 +308,21 @@ else {
 		if ( $debug_mode == "1" ) {
 			echo "The message for no updates was send!<p>\n";
 		}
+	}
+}
+
+// we log current date and time with the resulting status of the script into log file
+if ( $log_every_run == "1" ) {
+
+	$today = getdate();
+	$ime_loga = $today['year'] . "-" . $today['mon'] . "-" . $today['mday'] . ".log";
+	
+	$logiranje = fopen($ime_loga, 'a') or die("<p>Can not create log file!</p>\n");
+	fwrite($logiranje, $today['mday'] . "." . $today['mon'] . "." .$today['year'] . "\t" . $today['hours'] . ":" . $today['minutes'] . ":" . $today['seconds'] . "\t" . $script_status . "\n");
+	fclose($logiranje);
+	
+	if ( $debug_mode == "1" ) {
+		echo "<p>The log entry was created with status " . $script_status . "!</p>\n";
 	}
 }
 
