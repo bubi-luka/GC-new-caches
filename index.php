@@ -224,17 +224,19 @@ $html = file_get_html($geocaching_url);
 // We look for titles on the web page
 $i = 0;
 foreach($html->find('tr.Data') as $article) {
-	if ( $article->find('span.small', 0)->plaintext != "" ) {
+
+  if ( $article->find('span.small', 0)->plaintext != "" ) {
     $naslovi[] = trim($article->find('td.Merge span', 0)->plaintext); // we search for cache's data
     $url[] = "http://www.geocaching.com" . trim($article->find('a.lnk', 0)->href);
-    list($owner[], $cache_id[], $country[]) = split(' \| ', preg_replace('/(?:\s\s+|\n|\t)/', ' ', trim($article->find('span.small', 0)->plaintext)));
+    list($owner[], $cache_id[], $country[]) = split(' \| ', preg_replace('/(?:\s\s+|\n|\t)/', ' ', trim($article->find('span.small', 1)->plaintext)));
     $date[] = trim($article->find('span.small', 1)->plaintext);
     // if the cache does not exist in the database, we add it to the list of new caches
     if ( !in_array($cache_id[$i], $vrstice) ) {
-			$novosti[] = $i;
-		}
-		$i++;
-	}
+			  $novosti[] = $i;
+    }
+    $i++;
+	 }
+	
 }
 
 $stran_st_zapisov = strval(count($naslovi));
